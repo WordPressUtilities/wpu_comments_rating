@@ -4,7 +4,7 @@ Plugin Name: WPU Comments Rating
 Plugin URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Update URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Description: Allow users to rate in comments.
-Version: 0.1.0
+Version: 0.1.1
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_comments_rating
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 class WPUCommentsRating {
-    private $plugin_version = '0.1.0';
+    private $plugin_version = '0.1.1';
     private $plugin_settings = array(
         'id' => 'wpu_comments_rating',
         'name' => 'WPU Comments Rating'
@@ -69,7 +69,6 @@ class WPUCommentsRating {
 
         # Display rating in comments
         add_filter('comment_text', array($this, 'comment_text'), 10, 3);
-
     }
 
     public function plugins_loaded() {
@@ -77,6 +76,7 @@ class WPUCommentsRating {
         $this->star_icon_vote = apply_filters('wpu_comments_rating__star_icon_vote', '&#11088;');
         $this->star_icon_empty = apply_filters('wpu_comments_rating__star_icon_empty', '&#9734;');
         $this->star_icon_full = apply_filters('wpu_comments_rating__star_icon_full', '&#9733;');
+        $this->max_rating = apply_filters('wpu_comments_rating__max_rating', 5);
     }
 
     /* ----------------------------------------------------------
@@ -117,8 +117,8 @@ class WPUCommentsRating {
         echo '<fieldset class="comments-rating">';
 
         /* Label */
-        echo '<label for="rating">' . __('Global note', 'wpu_comments_rating');
-        echo '<span class="required">*</span>';
+        echo '<label for="rating">';
+        echo __('Global note', 'wpu_comments_rating');
         echo '</label>';
 
         /* Rating */
