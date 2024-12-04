@@ -4,7 +4,7 @@ Plugin Name: WPU Comments Rating
 Plugin URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Update URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Description: Allow users to rate in comments.
-Version: 0.1.1
+Version: 0.1.2
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_comments_rating
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 class WPUCommentsRating {
-    private $plugin_version = '0.1.1';
+    private $plugin_version = '0.1.2';
     private $plugin_settings = array(
         'id' => 'wpu_comments_rating',
         'name' => 'WPU Comments Rating'
@@ -189,7 +189,7 @@ class WPUCommentsRating {
     public function comment_text($comment_text, $comment, $args) {
         $rating = get_comment_meta($comment->comment_ID, 'wpu_comment_rating', true);
         $rating_html = '';
-        $comment_text .= 'azaz';
+
         if ($rating) {
             $rating_html = '<div class="comment-rating">' . $this->comments_get_rating_html($rating) . '</div>';
         }
