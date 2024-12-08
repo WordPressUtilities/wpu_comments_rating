@@ -4,7 +4,7 @@ Plugin Name: WPU Comments Rating
 Plugin URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Update URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Description: Allow users to rate in comments.
-Version: 0.1.2
+Version: 0.2.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_comments_rating
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 class WPUCommentsRating {
-    private $plugin_version = '0.1.2';
+    private $plugin_version = '0.2.0';
     private $plugin_settings = array(
         'id' => 'wpu_comments_rating',
         'name' => 'WPU Comments Rating'
@@ -69,6 +69,15 @@ class WPUCommentsRating {
 
         # Display rating in comments
         add_filter('comment_text', array($this, 'comment_text'), 10, 3);
+
+        /* Edit rating in comment page */
+        add_action('add_meta_boxes_comment', array(&$this, 'add_meta_boxes_comment'));
+        add_action('edit_comment', function ($comment_id) {
+            if (!isset($_POST['rating']) || !ctype_digit($_POST['rating']) || $_POST['rating'] < 1 || $_POST['rating'] > $this->max_rating) {
+                return;
+            }
+            update_comment_meta($comment_id, 'wpu_comment_rating', intval($_POST['rating']));
+        }, 10, 2);
     }
 
     public function plugins_loaded() {
@@ -269,6 +278,24 @@ class WPUCommentsRating {
         $html .= '</div>';
         $html .= '</div>';
         return $html;
+    }
+
+    public function add_meta_boxes_comment($comment) {
+        add_meta_box('wpu_comment_rating', __('Rating', 'wpu_comments_rating'), array(&$this, 'wpu_comment_rating'), null, 'normal', 'high');
+    }
+
+    public function wpu_comment_rating($comment) {
+        $rating = get_comment_meta($comment->comment_ID, 'wpu_comment_rating', true);
+        echo '<fieldset class="comments-rating">';
+        echo '<span class="rating-container">';
+        for ($i = 1; $i <= $this->max_rating; $i++):
+            echo '<span style="margin-right:0.5em;" class="rating-item-' . $i . '">';
+            echo '<span><input type="radio" id="rating-' . esc_attr($i) . '" name="rating" value="' . esc_attr($i) . '" ' . checked($rating, $i, false) . ' /></span>';
+            echo '<label for="rating-' . esc_attr($i) . '">' . $this->star_icon_vote . '</label>';
+            echo '</span>';
+        endfor;
+        echo '</span>';
+        echo '</fieldset>';
     }
 
 }
