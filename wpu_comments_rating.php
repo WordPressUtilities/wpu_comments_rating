@@ -4,7 +4,7 @@ Plugin Name: WPU Comments Rating
 Plugin URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Update URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Description: Allow users to rate in comments.
-Version: 0.2.0
+Version: 0.3.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_comments_rating
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 class WPUCommentsRating {
-    private $plugin_version = '0.2.0';
+    private $plugin_version = '0.3.0';
     private $plugin_settings = array(
         'id' => 'wpu_comments_rating',
         'name' => 'WPU Comments Rating'
@@ -176,13 +176,21 @@ class WPUCommentsRating {
 
     public function update_post_rating($post_id) {
         global $wpdb;
+
+        /* Average rating */
         $q = $wpdb->prepare("SELECT AVG(meta_value) FROM $wpdb->commentmeta WHERE meta_key = 'wpu_comment_rating'  AND comment_id  IN(SELECT comment_ID FROM $wpdb->comments WHERE  comment_approved='1' && comment_post_ID=%d)", $post_id);
         $median = $wpdb->get_var($q);
         if (!is_numeric($median)) {
             $median = 0;
         }
-        $median = round($median, 2);
-        update_post_meta($post_id, 'wpu_post_rating', $median);
+        update_post_meta($post_id, 'wpu_post_rating', round($median, 2));
+
+        /* Number of ratings */
+        $q = $wpdb->prepare("SELECT COUNT(*) FROM $wpdb->commentmeta WHERE meta_key = 'wpu_comment_rating'  AND comment_id  IN(SELECT comment_ID FROM $wpdb->comments WHERE  comment_approved='1' && comment_post_ID=%d)", $post_id);
+        $count = $wpdb->get_var($q);
+        if (is_numeric($count)) {
+            update_post_meta($post_id, 'wpu_post_rating_count', $count);
+        }
     }
 
     public function get_comment_parent($comment_id) {
@@ -239,13 +247,26 @@ class WPUCommentsRating {
         echo wpautop(sprintf(__('Rating : %s', 'wpu_comments_rating'), $rating));
 
         /* Display number of ratings */
-        $comments = get_comments(array(
-            'post_id' => $post->ID,
-            'status' => 'approve',
-            'meta_key' => 'wpu_comment_rating'
-        ));
-        echo wpautop(sprintf(__('Number of ratings : %d', 'wpu_comments_rating'), count($comments)));
+        $rating_count = $this->get_post_rating_count($post->ID);
+        echo wpautop(sprintf(__('Number of ratings : %d', 'wpu_comments_rating'), $rating_count));
 
+    }
+
+    public function get_post_rating_count($post_id) {
+        $rating_count = get_post_meta($post_id, 'wpu_post_rating_count', true);
+        if (!$rating_count) {
+            $comments = get_comments(array(
+                'post_id' => $post_id,
+                'status' => 'approve',
+                'meta_key' => 'wpu_comment_rating'
+            ));
+            $rating_count = count($comments);
+            update_post_meta($post_id, 'wpu_post_rating_count', $rating_count);
+        }
+        if (!$rating_count) {
+            $rating_count = 0;
+        }
+        return $rating_count;
     }
 
     public function comments_get_post_rating_html($post_id) {
