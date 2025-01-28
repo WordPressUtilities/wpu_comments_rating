@@ -4,7 +4,7 @@ Plugin Name: WPU Comments Rating
 Plugin URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Update URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Description: Allow users to rate in comments.
-Version: 0.3.0
+Version: 0.4.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_comments_rating
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 class WPUCommentsRating {
-    private $plugin_version = '0.3.0';
+    private $plugin_version = '0.4.0';
     private $plugin_settings = array(
         'id' => 'wpu_comments_rating',
         'name' => 'WPU Comments Rating'
@@ -274,10 +274,10 @@ class WPUCommentsRating {
         if (!$note) {
             return '';
         }
-        return $this->comments_get_rating_html($note);
+        return $this->comments_get_rating_html($note, 'post');
     }
 
-    public function comments_get_rating_html($note) {
+    public function comments_get_rating_html($note, $type = 'comment') {
         if (!$note) {
             return '';
         }
@@ -290,8 +290,15 @@ class WPUCommentsRating {
             $stars_filled .= is_admin() ? '<span class="dashicons dashicons-star-filled"></span>' : $this->star_icon_full;
             $stars_empty .= is_admin() ? '<span class="dashicons dashicons-star-empty"></span>' : $this->star_icon_empty;
         }
-        $html .= '<div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating" class="wpu-comment-note__wrapper">';
 
+        $ratings_schema = 'itemscope itemtype="https://schema.org/AggregateRating"';
+        if ($type == 'comment') {
+            $ratings_schema = 'itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating"';
+        }
+
+        $html .= '<div ' . $ratings_schema . ' class="wpu-comment-note__wrapper">';
+        $html .= '<meta itemprop="worstRating" content="1">';
+        $html .= '<meta itemprop="bestRating" content="' . $this->max_rating . '">';
         $html .= '<div class="wpu-comment-note__metas"><span itemprop="ratingValue">' . $note . '</span>/' . $this->max_rating . '</div>';
         $html .= '<div class="wpu-comment-note" title="' . $note . '/' . $this->max_rating . '">';
         $html .= '<div class="wpu-comment-note__bg">' . $stars_empty . '</div>';
@@ -328,6 +335,18 @@ $WPUCommentsRating = new WPUCommentsRating();
 ---------------------------------------------------------- */
 
 /**
+ * Get rating for a post
+ * @param boolean $post_id
+ * @return float
+ */
+function wpu_comments_rating__get_rating($post_id = false) {
+    if (!$post_id) {
+        $post_id = get_the_ID();
+    }
+    return get_post_meta($post_id, 'wpu_post_rating', true);
+}
+
+/**
  * Get HTML rating for a post
  *
  * @param boolean $post_id
@@ -339,4 +358,37 @@ function wpu_comments_rating__get_rating_html($post_id = false) {
     }
     global $WPUCommentsRating;
     return $WPUCommentsRating->comments_get_post_rating_html($post_id);
+}
+
+/**
+ * Get number of ratings for a post
+ * @param boolean $post_id
+ * @return int
+ */
+function wpu_comments_rating__get_rating_count($post_id = false) {
+    if (!$post_id) {
+        $post_id = get_the_ID();
+    }
+    global $WPUCommentsRating;
+    return $WPUCommentsRating->get_post_rating_count($post_id);
+}
+
+/**
+ * Get HTML rating for a comment
+ *
+ * @param object $comment
+ * @return string HTML
+ */
+function wpu_comments_rating__get_comment_rating_html($comment) {
+    global $WPUCommentsRating;
+    return $WPUCommentsRating->comments_get_rating_html(wpu_comments_rating__get_comment_rating($comment), 'comment');
+}
+
+/**
+ * Get rating for a comment
+ * @param object $comment
+ * @return float
+ */
+function wpu_comments_rating__get_comment_rating($comment) {
+    return get_comment_meta($comment->comment_ID, 'wpu_comment_rating', true);
 }
