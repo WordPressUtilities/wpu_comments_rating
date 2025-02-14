@@ -4,7 +4,7 @@ Plugin Name: WPU Comments Rating
 Plugin URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Update URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Description: Allow users to rate in comments.
-Version: 0.4.0
+Version: 0.5.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_comments_rating
@@ -22,13 +22,15 @@ if (!defined('ABSPATH')) {
 }
 
 class WPUCommentsRating {
-    private $plugin_version = '0.4.0';
+    private $plugin_version = '0.5.0';
     private $plugin_settings = array(
         'id' => 'wpu_comments_rating',
         'name' => 'WPU Comments Rating'
     );
     private $plugin_description;
     private $post_types;
+    private $rating_required = false;
+    private $form_displayed = false;
     private $max_rating = 5;
     private $star_icon_vote = '';
     private $star_icon_empty = '';
@@ -63,6 +65,19 @@ class WPUCommentsRating {
         add_action('wp_set_comment_status', function ($comment_ID, $status) {
             $this->update_post_rating($this->get_comment_parent($comment_ID));
         }, 99, 2);
+        add_filter('preprocess_comment', function ($commentdata) {
+            if(!$this->rating_required){
+                return $commentdata;
+            }
+            $post_type = get_post_type($commentdata['comment_post_ID']);
+            if (!in_array($post_type, $this->post_types)) {
+                return $commentdata;
+            }
+            if (!isset($_POST['rating']) || !ctype_digit($_POST['rating']) || $_POST['rating'] < 1 || $_POST['rating'] > $this->max_rating) {
+                wp_die(__('Error: You must provide a valid rating.', 'wpu_comments_rating'));
+            }
+            return $commentdata;
+        });
 
         # Add metabox to post types
         add_action('add_meta_boxes', array(&$this, 'add_metaboxes'));
@@ -78,6 +93,16 @@ class WPUCommentsRating {
             }
             update_comment_meta($comment_id, 'wpu_comment_rating', intval($_POST['rating']));
         }, 10, 2);
+
+        /* Disable comment form novalidate if rating is enabled */
+        add_action('wp_footer', function () {
+            if (!$this->form_displayed || !$this->rating_required) {
+                return;
+            }
+            echo "<script>";
+            echo "document.addEventListener('DOMContentLoaded',function(){'use strict';document.querySelectorAll('.comment-form[novalidate]').forEach(function(_f){_f.removeAttribute('novalidate')})});";
+            echo "</script>";
+        }, 999);
     }
 
     public function plugins_loaded() {
@@ -86,6 +111,7 @@ class WPUCommentsRating {
         $this->star_icon_empty = apply_filters('wpu_comments_rating__star_icon_empty', '&#9734;');
         $this->star_icon_full = apply_filters('wpu_comments_rating__star_icon_full', '&#9733;');
         $this->max_rating = apply_filters('wpu_comments_rating__max_rating', 5);
+        $this->rating_required = apply_filters('wpu_comments_rating__rating_required', false);
     }
 
     /* ----------------------------------------------------------
@@ -122,19 +148,22 @@ class WPUCommentsRating {
         if (!in_array(get_post_type(), $this->post_types)) {
             return;
         }
-
+        $this->form_displayed = true;
         echo '<fieldset class="comments-rating">';
 
         /* Label */
         echo '<label for="rating">';
         echo __('Global note', 'wpu_comments_rating');
+        if ($this->rating_required) {
+            echo ' <span class="required">*</span>';
+        }
         echo '</label>';
 
         /* Rating */
         echo '<span class="rating-container">';
         for ($i = 1; $i <= $this->max_rating; $i++):
             echo '<span class="rating-item-' . $i . '">';
-            echo '<span><input type="radio" id="rating-' . esc_attr($i) . '" name="rating" value="' . esc_attr($i) . '" /></span>';
+            echo '<span><input ' . ($this->rating_required ? 'required' : '') . ' type="radio" id="rating-' . esc_attr($i) . '" name="rating" value="' . esc_attr($i) . '" /></span>';
             echo '<label for="rating-' . esc_attr($i) . '">' . $this->star_icon_vote . '</label>';
             echo '</span>';
         endfor;
@@ -148,9 +177,7 @@ class WPUCommentsRating {
     ---------------------------------------------------------- */
 
     public function save_rating($comment_id, $comment_approved) {
-        if ($comment_approved !== 1) {
-            return;
-        }
+
         if (!isset($_POST['rating'])) {
             return;
         }

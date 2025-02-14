@@ -1,2 +1,2 @@
 <?php
-return ['domain'=>NULL,'plural-forms'=>NULL,'messages'=>['Allow users to rate in comments.'=>'Permettez aux utilisateurs de noter dans les commentaires.','Global note'=>'Note globale','Rating'=>'Note','Rating : %s'=>'Note : %s','Number of ratings : %d'=>'Nombre de notes : %d'],'language'=>'fr_FR','x-generator'=>'Poedit 3.5'];
+return ['domain'=>NULL,'plural-forms'=>NULL,'messages'=>['Error: You must provide a valid rating.'=>'Erreur : Vous devez fournir une note valide.','Allow users to rate in comments.'=>'Permettez aux utilisateurs de noter dans les commentaires.','Global note'=>'Note globale','Rating'=>'Note','Rating : %s'=>'Note : %s','Number of ratings : %d'=>'Nombre de notes : %d'],'language'=>'fr_FR','x-generator'=>'Poedit 3.5'];

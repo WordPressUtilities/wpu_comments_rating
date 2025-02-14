@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Comments Rating\n"
-"POT-Creation-Date: 2024-12-10 18:51+0100\n"
+"POT-Creation-Date: 2025-02-14 19:03+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -25,24 +25,28 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-8: inc/WPUBaseToolbox\n"
 "X-Poedit-SearchPathExcluded-9: inc/WPUBaseUpdate\n"
 
-#: .././wpu_comments_rating.php:102
+#: .././wpu_comments_rating.php:77
+msgid "Error: You must provide a valid rating."
+msgstr "Erreur : Vous devez fournir une note valide."
+
+#: .././wpu_comments_rating.php:128
 msgid "Allow users to rate in comments."
 msgstr "Permettez aux utilisateurs de noter dans les commentaires."
 
-#: .././wpu_comments_rating.php:130
+#: .././wpu_comments_rating.php:156
 msgid "Global note"
 msgstr "Note globale"
 
-#: .././wpu_comments_rating.php:234 .././wpu_comments_rating.php:305
+#: .././wpu_comments_rating.php:261 .././wpu_comments_rating.php:339
 msgid "Rating"
 msgstr "Note"
 
-#: .././wpu_comments_rating.php:247
+#: .././wpu_comments_rating.php:274
 #, php-format
 msgid "Rating : %s"
 msgstr "Note : %s"
 
-#: .././wpu_comments_rating.php:251
+#: .././wpu_comments_rating.php:278
 #, php-format
 msgid "Number of ratings : %d"
 msgstr "Nombre de notes : %d"
