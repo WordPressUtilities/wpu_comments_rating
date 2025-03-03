@@ -4,7 +4,7 @@ Plugin Name: WPU Comments Rating
 Plugin URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Update URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Description: Allow users to rate in comments.
-Version: 0.5.0
+Version: 0.6.0
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_comments_rating
@@ -22,11 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 class WPUCommentsRating {
-    private $plugin_version = '0.5.0';
-    private $plugin_settings = array(
-        'id' => 'wpu_comments_rating',
-        'name' => 'WPU Comments Rating'
-    );
+    private $plugin_version = '0.6.0';
     private $plugin_description;
     private $post_types;
     private $rating_required = false;
@@ -138,6 +134,9 @@ class WPUCommentsRating {
         /* Front Style */
         wp_register_style('wpu_comments_rating_front_style', plugins_url('assets/note.css', __FILE__), array(), $this->plugin_version);
         wp_enqueue_style('wpu_comments_rating_front_style');
+        /* Front Script */
+        wp_register_script('wpu_comments_rating_front_script', plugins_url('assets/note.js', __FILE__), array('jquery'), $this->plugin_version);
+        wp_enqueue_script('wpu_comments_rating_front_script');
     }
 
     /* ----------------------------------------------------------
@@ -162,7 +161,7 @@ class WPUCommentsRating {
         /* Rating */
         echo '<span class="rating-container">';
         for ($i = 1; $i <= $this->max_rating; $i++):
-            echo '<span class="rating-item-' . $i . '">';
+            echo '<span class="rating-item rating-item-' . $i . '">';
             echo '<span><input ' . ($this->rating_required ? 'required' : '') . ' type="radio" id="rating-' . esc_attr($i) . '" name="rating" value="' . esc_attr($i) . '" /></span>';
             echo '<label for="rating-' . esc_attr($i) . '">' . $this->star_icon_vote . '</label>';
             echo '</span>';
