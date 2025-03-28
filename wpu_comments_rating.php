@@ -4,7 +4,7 @@ Plugin Name: WPU Comments Rating
 Plugin URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Update URI: https://github.com/WordPressUtilities/wpu_comments_rating
 Description: Allow users to rate in comments.
-Version: 0.6.0
+Version: 0.6.1
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpu_comments_rating
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 class WPUCommentsRating {
-    private $plugin_version = '0.6.0';
+    private $plugin_version = '0.6.1';
     private $plugin_description;
     private $post_types;
     private $rating_required = false;
@@ -31,6 +31,8 @@ class WPUCommentsRating {
     private $star_icon_vote = '';
     private $star_icon_empty = '';
     private $star_icon_full = '';
+    private $star_icon_full_admin = '';
+    private $star_icon_empty_admin = '';
 
     public function __construct() {
         add_action('plugins_loaded', array(&$this, 'plugins_loaded'));
@@ -62,7 +64,7 @@ class WPUCommentsRating {
             $this->update_post_rating($this->get_comment_parent($comment_ID));
         }, 99, 2);
         add_filter('preprocess_comment', function ($commentdata) {
-            if(!$this->rating_required){
+            if (!$this->rating_required) {
                 return $commentdata;
             }
             $post_type = get_post_type($commentdata['comment_post_ID']);
@@ -106,6 +108,8 @@ class WPUCommentsRating {
         $this->star_icon_vote = apply_filters('wpu_comments_rating__star_icon_vote', '&#11088;');
         $this->star_icon_empty = apply_filters('wpu_comments_rating__star_icon_empty', '&#9734;');
         $this->star_icon_full = apply_filters('wpu_comments_rating__star_icon_full', '&#9733;');
+        $this->star_icon_full_admin = apply_filters('wpu_comments_rating__star_icon_full_admin', '<span class="dashicons dashicons-star-filled"></span>');
+        $this->star_icon_empty_admin = apply_filters('wpu_comments_rating__star_icon_empty_admin', '<span class="dashicons dashicons-star-empty"></span>');
         $this->max_rating = apply_filters('wpu_comments_rating__max_rating', 5);
         $this->rating_required = apply_filters('wpu_comments_rating__rating_required', false);
     }
@@ -313,8 +317,8 @@ class WPUCommentsRating {
         $stars_empty = '';
 
         for ($i = 0; $i < $this->max_rating; $i++) {
-            $stars_filled .= is_admin() ? '<span class="dashicons dashicons-star-filled"></span>' : $this->star_icon_full;
-            $stars_empty .= is_admin() ? '<span class="dashicons dashicons-star-empty"></span>' : $this->star_icon_empty;
+            $stars_filled .= is_admin() ? $this->star_icon_full_admin : $this->star_icon_full;
+            $stars_empty .= is_admin() ? $this->star_icon_empty_admin : $this->star_icon_empty;
         }
 
         $ratings_schema = 'itemscope itemtype="https://schema.org/AggregateRating"';
@@ -343,9 +347,9 @@ class WPUCommentsRating {
         echo '<fieldset class="comments-rating">';
         echo '<span class="rating-container">';
         for ($i = 1; $i <= $this->max_rating; $i++):
-            echo '<span style="margin-right:0.5em;" class="rating-item-' . $i . '">';
+            echo '<span style="margin-right:0.75em;line-height:2;" class="rating-item-' . $i . '">';
             echo '<span><input type="radio" id="rating-' . esc_attr($i) . '" name="rating" value="' . esc_attr($i) . '" ' . checked($rating, $i, false) . ' /></span>';
-            echo '<label for="rating-' . esc_attr($i) . '">' . $this->star_icon_vote . '</label>';
+            echo '<label style="vertical-align: middle;" for="rating-' . esc_attr($i) . '">' . $this->star_icon_full_admin . '</label>';
             echo '</span>';
         endfor;
         echo '</span>';
